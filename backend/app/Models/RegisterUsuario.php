@@ -1,4 +1,5 @@
 <?php
+// app/Models/RegisterUsuario.php
 
 namespace App\Models;
 
@@ -11,22 +12,13 @@ class RegisterUsuario extends Authenticatable
     use HasApiTokens, HasFactory;
 
     protected $table = 'register_usuario';
-    
+
     protected $fillable = [
-        'nombres',
-        'apellidos',
-        'nombre_usuario',
-        'correo',
-        'numero_cedula',
-        'edad',
-        'contraseña',
-        'rol',
+        'nombres', 'apellidos', 'nombre_usuario', 'correo',
+        'numero_cedula', 'edad', 'contraseña', 'rol',
     ];
 
-    protected $hidden = [
-        'contraseña',
-        'remember_token',
-    ];
+    protected $hidden = ['contraseña', 'remember_token'];
 
     public function getAuthPassword()
     {

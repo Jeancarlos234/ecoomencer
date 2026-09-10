@@ -1,13 +1,50 @@
     // src/components/Home.tsx
 
-    import React from 'react';
-    import { Link } from 'react-router-dom';
+    import React, { useState, useEffect } from 'react';
+    import { Link, useNavigate } from 'react-router-dom';
+    import { useAuth } from '../context/useAuth';
     import '../css/Home.css';
 
     const Home: React.FC = () => {
+    const navigate = useNavigate();
+    const { user, isAuthenticated, logout } = useAuth();
+    const [showUserMenu, setShowUserMenu] = useState(false);
+
+    // Iniciales del avatar
+    const getInitials = (): string => {
+        if (!user) return '?';
+        const n = user.nombres?.charAt(0)?.toUpperCase() || '';
+        const a = user.apellidos?.charAt(0)?.toUpperCase() || '';
+        return `${n}${a}` || user.nombre_usuario?.charAt(0)?.toUpperCase() || '?';
+    };
+
+    // Logout
+    const handleLogout = () => {
+        logout();
+        setShowUserMenu(false);
+        navigate('/login');
+    };
+
+    // Cerrar menú al hacer click fuera
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.user-menu-wrapper')) {
+            setShowUserMenu(false);
+        }
+        };
+
+        if (showUserMenu) {
+        document.addEventListener('click', handleClickOutside);
+        }
+
+        return () => {
+        document.removeEventListener('click', handleClickOutside);
+        };
+    }, [showUserMenu]);
+
     return (
         <div className="home-container">
-        {/* Header */}
         <header className="header">
             <div className="header-content">
             <div className="header-brand">
@@ -20,13 +57,96 @@
                 </div>
                 <span className="brand-name">Ecommencer</span>
             </div>
-            
+
             <nav className="header-nav">
                 <Link to="/products" className="nav-link">Productos</Link>
                 <Link to="/categories" className="nav-link">Categorías</Link>
                 <Link to="/offers" className="nav-link">Ofertas</Link>
-                <Link to="/login" className="nav-link">Iniciar Sesión</Link>
-                <Link to="/register" className="nav-button">Crear Cuenta</Link>
+
+                {isAuthenticated && user ? (
+                <div className="user-menu-wrapper">
+                    <button
+                    type="button"
+                    className="user-menu-trigger"
+                    onClick={() => setShowUserMenu(prev => !prev)}
+                    aria-expanded={showUserMenu}
+                    >
+                    <span className="user-avatar">{getInitials()}</span>
+                    <span className="user-name">
+                        {user.nombres} {user.apellidos}
+                    </span>
+                    <svg
+                        className={`user-chevron ${showUserMenu ? 'open' : ''}`}
+                        width="16" height="16" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" strokeWidth="2"
+                    >
+                        <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                    </button>
+
+                    {showUserMenu && (
+                    <div className="user-menu-dropdown">
+                        <div className="user-menu-header">
+                        <div className="user-menu-avatar">{getInitials()}</div>
+                        <div className="user-menu-info">
+                            <strong>{user.nombres} {user.apellidos}</strong>
+                            <span>@{user.nombre_usuario}</span>
+                            <span className="user-menu-email">{user.correo}</span>
+                        </div>
+                        </div>
+
+                        <div className="user-menu-divider"></div>
+
+                        <Link to="/dashboard" className="user-menu-item" onClick={() => setShowUserMenu(false)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        Mi Panel
+                        </Link>
+
+                        <Link to="/profile" className="user-menu-item" onClick={() => setShowUserMenu(false)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Mi Perfil
+                        </Link>
+
+                        <Link to="/orders" className="user-menu-item" onClick={() => setShowUserMenu(false)}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                        Mis Pedidos
+                        </Link>
+
+                        <div className="user-menu-divider"></div>
+
+                        <button
+                        type="button"
+                        className="user-menu-item logout"
+                        onClick={handleLogout}
+                        >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                            <polyline points="16 17 21 12 16 7"/>
+                            <line x1="21" y1="12" x2="9" y2="12"/>
+                        </svg>
+                        Cerrar Sesión
+                        </button>
+                    </div>
+                    )}
+                </div>
+                ) : (
+                <>
+                    <Link to="/login" className="nav-link">Iniciar Sesión</Link>
+                    <Link to="/register" className="nav-button">Crear Cuenta</Link>
+                </>
+                )}
             </nav>
             </div>
         </header>
@@ -38,32 +158,48 @@
                 <span className="badge-dot"></span>
                 Nuevos productos disponibles
             </div>
-            
+
             <h1 className="hero-title">
-                Compra lo Mejor
-                <span className="title-highlight"> al Mejor Precio</span>
+                {isAuthenticated && user ? (
+                <>Bienvenido de nuevo,<span className="title-highlight"> {user.nombres}</span></>
+                ) : (
+                <>Compra lo Mejor<span className="title-highlight"> al Mejor Precio</span></>
+                )}
             </h1>
-            
+
             <p className="hero-description">
-                Descubre nuestra amplia selección de productos de calidad. 
-                Envíos rápidos y pagos seguros.
+                {isAuthenticated && user
+                ? 'Explora nuestras novedades y aprovecha las ofertas exclusivas preparadas para ti.'
+                : 'Descubre nuestra amplia selección de productos de calidad. Envíos rápidos y pagos seguros.'}
             </p>
-            
+
             <div className="hero-actions">
-                <Link to="/register" className="btn-primary">
-                <span>Comenzar a Comprar</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                </svg>
-                </Link>
-                <Link to="/login" className="btn-secondary">
-                Ya soy Cliente
-                </Link>
+                {isAuthenticated && user ? (
+                <>
+                    <Link to="/products" className="btn-primary">
+                    <span>Explorar Productos</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                    </Link>
+                    <Link to="/dashboard" className="btn-secondary">Mi Panel</Link>
+                </>
+                ) : (
+                <>
+                    <Link to="/register" className="btn-primary">
+                    <span>Comenzar a Comprar</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                        <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                    </Link>
+                    <Link to="/login" className="btn-secondary">Ya soy Cliente</Link>
+                </>
+                )}
             </div>
             </div>
 
-            {/* Stats */}
             <div className="hero-stats">
             <div className="stat-item">
                 <span className="stat-number">10K+</span>
@@ -134,7 +270,6 @@
             </div>
         </section>
 
-        {/* Categories Preview */}
         <section className="categories-section">
             <h2 className="categories-title">Categorías Destacadas</h2>
             <div className="categories-grid">

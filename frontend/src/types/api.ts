@@ -38,3 +38,26 @@
     token?: string;
     user?: User;
     }
+
+    // ===== RECUPERACIÓN DE CONTRASEÑA =====
+    export interface ForgotPasswordData {
+    correo: string;
+    }
+
+    export interface VerifyTokenData {
+    correo: string;
+    token: string;
+    }
+
+    export interface ResetPasswordData {
+    correo: string;
+    token: string;
+    contraseña: string;
+    contraseña_confirmation: string;
+    }
+
+    export interface PasswordResetResponse {
+    status: 'success' | 'error';
+    message: string;
+    errors?: Record<string, string[]>;
+    }

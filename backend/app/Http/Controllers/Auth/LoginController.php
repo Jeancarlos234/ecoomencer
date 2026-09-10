@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Auth/LoginController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -35,22 +36,28 @@ class LoginController extends Controller
                 ], 401);
             }
 
+            // ============================================
+            // Generar token con Sanctum
+            // ============================================
+            $token = $usuario->createToken('auth_token')->plainTextToken;
+
             return response()->json([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Login exitoso',
-                'user' => [
-                    'id' => $usuario->id,
-                    'nombres' => $usuario->nombres,
-                    'apellidos' => $usuario->apellidos,
+                'token'   => $token,           // ← AÑADIDO
+                'user'    => [
+                    'id'             => $usuario->id,
+                    'nombres'        => $usuario->nombres,
+                    'apellidos'      => $usuario->apellidos,
                     'nombre_usuario' => $usuario->nombre_usuario,
-                    'correo' => $usuario->correo,
-                    'rol' => $usuario->rol,
+                    'correo'         => $usuario->correo,
+                    'rol'            => $usuario->rol,
                 ]
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Error al iniciar sesión: ' . $e->getMessage()
             ], 500);
         }
